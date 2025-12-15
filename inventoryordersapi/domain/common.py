@@ -8,6 +8,7 @@ class TimestampMixin(BaseModel):
     updated_at: Optional[datetime]
 
 class ErrorCode(Enum):
+    SUCCESS = 200  # Add this line
     UNKNOWN = 0
     INVALID_REQUEST = 400
     NOT_FOUND = 404
@@ -21,7 +22,6 @@ class ErrorCode(Enum):
     RATE_LIMIT_EXCEEDED = 429
     TOO_MANY_REQUESTS = 429
     GATEWAY_TIMEOUT = 504
-
 
 class Pagination(BaseModel):
     limit: int = 100
