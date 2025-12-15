@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.18.xsd">
+
+    <changeSet id="create-order-table-01" author="system">
+        <createTable tableName="order">
+            <column name="order_id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false" />
+            </column>
+            <column name="customer_name" type="VARCHAR(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="customer_email" type="VARCHAR(255)">
+                <constraints nullable="false" />
+            </column>
+            <column name="total_amount" type="FLOAT" defaultValueNumeric="0.0">
+                <constraints nullable="false" />
+            </column>
+            <column name="is_paid" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false" />
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false" />
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false" />
+            </column>
+        </createTable>
+
+        <!-- Create indexes for better performance -->
+        <createIndex tableName="order" indexName="idx_order_name">
+            <column name="customer_name" />
+        </createIndex>
+
+        <createIndex tableName="order" indexName="idx_order_description">
+            <column name="customer_email" />
+        </createIndex>
+
+        <createIndex tableName="order" indexName="idx_order_price">
+            <column name="total_amount" />
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

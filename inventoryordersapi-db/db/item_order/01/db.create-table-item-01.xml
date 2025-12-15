@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.18.xsd">
+
+    <changeSet id="create-item-table-01" author="system">
+        <createTable tableName="item">
+            <column name="item_id" type="SERIAL">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="item_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_description" type="TEXT">
+                <constraints nullable="true"/>
+            </column>
+            <column name="item_price" type="FLOAT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="item_quantity" type="INT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="updated_at" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Create indexes for better performance -->
+        <createIndex tableName="item" indexName="idx_item_name">
+            <column name="item_name"/>
+        </createIndex>
+
+        <createIndex tableName="item" indexName="idx_item_id" unique="true">
+            <column name="item_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

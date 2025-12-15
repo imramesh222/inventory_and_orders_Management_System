@@ -1,0 +1,1 @@
+“The project follows a Domain → Repository → Service → API layered architecture to ensure separation of concerns and maintainability.”

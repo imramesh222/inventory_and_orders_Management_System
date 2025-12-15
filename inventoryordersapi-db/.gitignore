@@ -1,0 +1,9 @@
+.log
+.idea
+.DS_Store
+gen
+.gradle
+migrate-local.sh
+liquibase.properties
+oracle-liquibase.properties
+env.sh

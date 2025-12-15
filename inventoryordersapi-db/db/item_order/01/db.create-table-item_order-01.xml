@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.18.xsd">
+
+    <changeSet id="create-order-item-table-01" author="system">
+        <createTable tableName="order_item">
+            <column name="order_item_id" type="VARCHAR(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="order_id" type="VARCHAR(255)">
+                <constraints nullable="false" foreignKeyName="fk_order_item_order"
+                           referencedTableName="order" referencedColumnNames="order_id"/>
+            </column>
+            <column name="item_id" type="INTEGER">
+                <constraints nullable="false" foreignKeyName="fk_order_item_item"
+                           referencedTableName="item" referencedColumnNames="item_id"/>
+            </column>
+            <column name="quantity" type="INT" defaultValueNumeric="1">
+                <constraints nullable="false"/>
+            </column>
+            <column name="price" type="FLOAT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+
+         <!-- Create indexes for better performance -->
+        <createIndex tableName="order_item" indexName="idx_order_item_order">
+            <column name="order_id"/>
+        </createIndex>
+
+        <createIndex tableName="order_item" indexName="idx_order_item_item">
+            <column name="item_id"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
