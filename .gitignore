@@ -246,3 +246,19 @@ resources/xml_files/*
 config.ini.env
 docmintdb.db
 minio
+
+# Virtual environment
+venv/
+env/
+.venv/
+__pycache__/
+
+# Environment variables
+.env
+.env.local
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo

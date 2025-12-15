@@ -7,3 +7,18 @@ migrate-local.sh
 liquibase.properties
 oracle-liquibase.properties
 env.sh
+# Virtual environment
+venv/
+env/
+.venv/
+__pycache__/
+
+# Environment variables
+.env
+.env.local
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
