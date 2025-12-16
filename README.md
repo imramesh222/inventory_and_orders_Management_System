@@ -35,9 +35,7 @@ A robust RESTful API for managing inventory and processing orders with proper st
 - **Backend Framework**: FastAPI
 - **Database**: PostgreSQL
 - **ORM**: SQLAlchemy
-- **Migrations**: Alembic
-- **Containerization**: Docker (optional)
-- **Testing**: Pytest
+- **Migrations**: Liquibase
 
 ## 🚀 Getting Started
 
@@ -51,5 +49,5 @@ A robust RESTful API for managing inventory and processing orders with proper st
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/yourusername/inventory_and_orders_Management_System.git](https://github.com/yourusername/inventory_and_orders_Management_System.git)
+   git clone [https://github.com/imramesh222/inventory_and_orders_Management_System.git](https://github.com/imramesh222/inventory_and_orders_Management_System.git)
    cd inventory_and_orders_Management_System
