@@ -49,5 +49,6 @@ A robust RESTful API for managing inventory and processing orders with proper st
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/imramesh222/inventory_and_orders_Management_System.git](https://github.com/imramesh222/inventory_and_orders_Management_System.git)
-   cd inventory_and_orders_Management_System
+   git clone https://github.com/imramesh222/inventory_and_orders_Management_System.git
+   ```
+2. cd inventory_and_orders_Management_System
