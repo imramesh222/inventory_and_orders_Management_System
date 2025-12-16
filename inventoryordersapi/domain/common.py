@@ -22,6 +22,7 @@ class ErrorCode(Enum):
     RATE_LIMIT_EXCEEDED = 429
     TOO_MANY_REQUESTS = 429
     GATEWAY_TIMEOUT = 504
+    INSUFFICIENT_STOCK = "INSUFFICIENT_STOCK"
 
 class Pagination(BaseModel):
     limit: int = 100

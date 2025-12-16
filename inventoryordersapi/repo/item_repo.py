@@ -1,4 +1,6 @@
+import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import select
 from model.item_record import ItemRecord
 from domain.item import Item
 from utils.pagination import paginate_query
@@ -21,8 +23,15 @@ class ItemRepo:
         )
 
     def get(self, item_id: str) -> Item:
+        """Get item by ID without locking"""
         record = self.db.query(ItemRecord).filter(ItemRecord.item_id == item_id).first()
         return self._record_to_item(record)
+        
+    def get_for_update(self, item_id: str) -> ItemRecord:
+        """Get item with row lock for update"""
+        return self.db.query(ItemRecord).filter(
+            ItemRecord.item_id == item_id
+        ).with_for_update().first()
 
     def list_items(self, skip: int = 0, limit: int = 100):
         query = self.db.query(ItemRecord)
@@ -51,7 +60,27 @@ class ItemRepo:
         self.db.refresh(db_item)
         return self._record_to_item(db_item)
 
-    def delete(self, db_item: ItemRecord):
+    def delete(self, db_item: ItemRecord) -> bool:
         self.db.delete(db_item)
         self.db.commit()
         return True
+    
+    def decrease_item_quantity(self, item_id: str, quantity: int) -> None:
+        """
+        Decrease item quantity with row lock to prevent race conditions.
+        Assumes this is called within an existing transaction.
+        """
+        item = self.get_for_update(item_id)
+        
+        if not item:
+            raise ValueError(f"Item with ID {item_id} not found")
+        
+        if item.item_quantity < quantity:
+            raise ValueError(
+                f"Insufficient stock for item {item.item_name}. "
+                f"Available: {item.item_quantity}, Requested: {quantity}"
+            )
+        
+        item.item_quantity -= quantity
+        item.updated_at = datetime.datetime.utcnow()
+        self.db.add(item)

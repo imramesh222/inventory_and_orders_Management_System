@@ -1,6 +1,7 @@
 
 from pydantic import BaseModel
 from typing import Optional
+from datetime import datetime
 from .common import TimestampMixin
 
 # For creating a new item
@@ -15,6 +16,8 @@ class Item(BaseModel):
 # For reading an item (includes ID and timestamps)
 class ItemRead(Item, TimestampMixin):
     item_id: Optional[str] = None
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True

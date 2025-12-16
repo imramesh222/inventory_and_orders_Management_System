@@ -1,3 +1,5 @@
+from typing import List, Dict, Any
+from datetime import datetime
 from sqlalchemy.orm import Session
 from model.order_record import OrderRecord
 from model.order_item_record import OrderItemRecord
@@ -67,21 +69,46 @@ class OrderRepo:
         orders = [self._record_to_order_read(record) for record in records]
         return orders, pagination
 
-    def create(self, order: OrderRecord) -> OrderRead:
-        self.db.add(order)
-        self.db.commit()
-        self.db.refresh(order)
-        return self._record_to_order_read(order)
+    def create(self, order_data: Dict[str, Any]) -> OrderRead:
+        """Create a new order with order items in a transaction"""
+        try:
+            with self.db.begin():
+                # Create order
+                order = OrderRecord(
+                    customer_name=order_data['customer_name'],
+                    customer_email=order_data['customer_email'],
+                    total_amount=order_data['total_amount'],
+                    is_paid=False
+                )
+                self.db.add(order)
+                self.db.flush()  # Get the order_id
+                
+                # Create order items
+                for item_data in order_data['items']:
+                    order_item = OrderItemRecord(
+                        order_id=order.order_id,
+                        item_id=item_data["item_id"],
+                        quantity=item_data["quantity"],
+                        price=item_data["price"]
+                    )
+                    self.db.add(order_item)
+                
+                self.db.refresh(order)
+                return self._record_to_order_read(order)
+                
+        except Exception as e:
+            self.db.rollback()
+            raise e
 
     def update(self, db_order: OrderRecord, update_data: dict) -> OrderRead:
-        for field, value in update_data.items():
-            if field != 'order_id':  # Don't update the ID
-                setattr(db_order, field, value)
-        self.db.commit()
-        self.db.refresh(db_order)
-        return self._record_to_order_read(db_order)
+        with self.db.begin():
+            for field, value in update_data.items():
+                if field != 'order_id' and hasattr(db_order, field):
+                    setattr(db_order, field, value)
+            self.db.refresh(db_order)
+            return self._record_to_order_read(db_order)
 
-    def delete(self, db_order: OrderRecord):
-        self.db.delete(db_order)
-        self.db.commit()
-        return True
+    def delete(self, db_order: OrderRecord) -> bool:
+        with self.db.begin():
+            self.db.delete(db_order)
+            return True
