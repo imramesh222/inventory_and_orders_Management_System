@@ -70,3 +70,43 @@ A robust RESTful API for managing inventory and processing orders with proper st
     ```bash
     uvicorn inventoryordersapi.main:app --reload
     ```
+
+7. create database
+    ```bash
+    createdb inventoryordersapi
+    ```
+8. run migrations
+    ```bash
+    python -m inventoryordersapi.core.migrations.migrate
+    ```
+
+9. run the application
+    ```bash
+    uvicorn inventoryordersapi.main:app --reload
+    ```
+
+### link to postman collection
+https://web.postman.co/workspace/ce03356f-39b6-48d4-86ae-9b2ca9fc3cb4/collection/41568675-71b65322-d8e7-438e-b8d3-e45d7f650057?action=share&source=copy-link&creator=41568675
+
+
+
+### Swagger UI Collection
+
+- `http://localhost:8000/docs`
+screenshots of swagger ui collection
+![swagger ui collection](/static/screenshots/Screenshot1.png)
+![swagger ui collection](/static/screenshots/Screenshot2.png)
+![swagger ui collection](/static/screenshots/Screenshot3.png)
+![swagger ui collection](/static/screenshots/Screenshot4.png)
+![swagger ui collection](/static/screenshots/Screenshot5.png)
+![swagger ui collection](/static/screenshots/Screenshot6.png)
+![swagger ui collection](/static/screenshots/Screenshot7.png)
+![swagger ui collection](/static/screenshots/Screenshot8.png)
+![swagger ui collection](/static/screenshots/Screenshot9.png)
+![swagger ui collection](/static/screenshots/Screenshot10.png)
+![swagger ui collection](/static/screenshots/Screenshot11.png)
+![swagger ui collection](/static/screenshots/Screenshot12.png)
+![swagger ui collection](/static/screenshots/Screenshot13.png)
+![swagger ui collection](/static/screenshots/Screenshot14.png)
+![swagger ui collection](/static/screenshots/Screenshot15.png)
+![swagger ui collection](/static/screenshots/Screenshot16.png)

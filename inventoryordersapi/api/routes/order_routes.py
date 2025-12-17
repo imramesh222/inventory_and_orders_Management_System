@@ -31,6 +31,7 @@ def create_order(request: CreateOrderRequest, db: Session = Depends(get_db)):
     
     return response
 
+
 @router.get("/{order_id}", response_model=dict)  # keep using dict or create a separate DTO
 def get_order(order_id: str, db: Session = Depends(get_db)):
     service = OrderService(db)
@@ -44,6 +45,7 @@ def get_order(order_id: str, db: Session = Depends(get_db)):
         )
 
     return service.format_order_for_response(response.order)
+
 @router.get("/", response_model=dict)
 def list_orders(
     customer_name: str | None = Query(None, description="Filter by customer name"),
@@ -71,3 +73,11 @@ def list_orders(
         "code": 200,
         "msg": "Orders listed successfully"
     }
+
+@router.post("/{order_id}/cancel")
+def cancel_order(order_id: str, db: Session = Depends(get_db)):
+    service = OrderService(db)
+    success = service.cancel_order(order_id)
+    if not success:
+        raise HTTPException(status_code=400, detail="Cannot cancel order")
+    return {"error": False, "code": 200, "msg": "Order canceled successfully"}

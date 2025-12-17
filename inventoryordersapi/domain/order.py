@@ -1,5 +1,5 @@
 
-from pydantic import BaseModel
+from pydantic import BaseModel, conint
 from typing import List
 from .common import TimestampMixin
 from .order_item import OrderItemRead, OrderItemCreate
@@ -12,8 +12,8 @@ class Order(BaseModel):
 class OrderRead(Order, TimestampMixin):
     order_id: str
     total_amount: float
-    status: str  
-    order_items: List[OrderItemRead]  # nested order items with details
+    status: str
+    order_items: List[OrderItemRead]
 
     class Config:
         from_attributes = True

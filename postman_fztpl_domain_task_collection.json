@@ -1,0 +1,194 @@
+{
+  "info": {
+    "name": "Inventory & Orders Management API",
+    "description": "Postman collection for Inventory & Orders Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000"
+    },
+    {
+      "key": "api_key",
+      "value": "rameshapikey"
+    },
+    {
+      "key": "item_id",
+      "value": ""
+    },
+    {
+      "key": "order_id",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Root",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": ["{{base_url}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Items",
+      "item": [
+        {
+          "name": "Create Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item\": {\n    \"item_name\": \"Keyboard\",\n    \"item_description\": \"Mechanical keyboard\",\n    \"item_price\": 2500.0,\n    \"item_quantity\": 10,\n    \"low_stock\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/items/add_item",
+              "host": ["{{base_url}}"],
+              "path": ["items", "add_item"]
+            }
+          }
+        },
+        {
+          "name": "Get Item",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/items/{{item_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["items", "{{item_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Item",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"item\": {\n    \"item_name\": \"Keyboard Pro\",\n    \"item_description\": \"RGB Mechanical keyboard\",\n    \"item_price\": 3000.0,\n    \"item_quantity\": 15,\n    \"low_stock\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/items/{{item_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["items", "{{item_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/items/{{item_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["items", "{{item_id}}"]
+            }
+          }
+        },
+        {
+          "name": "List Items",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/items/",
+              "host": ["{{base_url}}"],
+              "path": ["items"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"order\": {\n    \"customer_name\": \"John Doe\",\n    \"customer_email\": \"john@example.com\",\n    \"order_items\": [\n      {\n        \"item_id\": \"{{item_id}}\",\n        \"quantity\": 2\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/",
+              "host": ["{{base_url}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "List Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/",
+              "host": ["{{base_url}}"],
+              "path": ["orders"]
+            }
+          }
+        },
+        {
+          "name": "Get Order",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-API-KEY", "value": "{{api_key}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/{{order_id}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["orders", "{{order_id}}", "cancel"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
