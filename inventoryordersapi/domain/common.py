@@ -24,12 +24,19 @@ class ErrorCode(Enum):
     GATEWAY_TIMEOUT = 504
     INSUFFICIENT_STOCK = "INSUFFICIENT_STOCK"
 
+# class Pagination(BaseModel):
+#     limit: int = 100
+#     offset: int = 0
+#     prev_cursor: str = None
+#     next_cursor: str = None
+#     total_count: int = 0
+
 class Pagination(BaseModel):
-    limit: int = 100
-    offset: int = 0
-    prev_cursor: str = None
-    next_cursor: str = None
-    total_count: int = 0
+    total: int
+    page: int
+    page_size: int
+    next_cursor: Optional[str] = None
+    prev_cursor: Optional[str] = None
 
 
 class Debug(BaseModel):

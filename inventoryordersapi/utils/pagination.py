@@ -1,8 +1,8 @@
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Tuple
 from sqlalchemy.orm import Query
-from domain.common import Pagination
+from inventoryordersapi.domain.common import Pagination
 
-def paginate_query(query: Query, limit: int = 100, offset: int = 0) -> Tuple[List[Any], Pagination]:
+def paginate_query(query: Query, limit: int = 100, offset: int = 0, page: int = 1, page_size: int = 10) -> Tuple[List[Any], Pagination]:
     """
     Paginate a SQLAlchemy query and return results + pagination info.
     """
@@ -13,9 +13,9 @@ def paginate_query(query: Query, limit: int = 100, offset: int = 0) -> Tuple[Lis
     prev_cursor = str(max(offset - limit, 0)) if offset > 0 else None
 
     pagination = Pagination(
-        limit=limit,
-        offset=offset,
-        total_count=total_count,
+        total=total_count,
+        page=page,
+        page_size=page_size,
         next_cursor=next_cursor,
         prev_cursor=prev_cursor
     )

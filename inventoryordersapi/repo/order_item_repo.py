@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from model.order_item_record import OrderItemRecord
-from domain.order_item import OrderItemRead
+from inventoryordersapi.model.order_item_record import OrderItemRecord
+from inventoryordersapi.domain.order_item import OrderItemRead
 
 class OrderItemRepo:
     def __init__(self, db: Session):
@@ -11,7 +11,7 @@ class OrderItemRepo:
         if not record:
             return None
         
-        from domain.item import ItemRead
+        from inventoryordersapi.domain.item import ItemRead
         
         return OrderItemRead(
             order_item_id=str(record.order_item_id),

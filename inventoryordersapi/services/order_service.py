@@ -1,21 +1,21 @@
 from sqlalchemy.orm import Session
-from domain.order_item import OrderItemRead, OrderItemCreate
-from repo.order_repo import OrderRepo
-from repo.order_item_repo import OrderItemRepo
-from repo.item_repo import ItemRepo
-from model.order_record import OrderRecord
-from model.order_item_record import OrderItemRecord
-from model.item_record import ItemRecord
-from domain.order import OrderRead
-from domain.order_req_res import (
+from inventoryordersapi.domain.order_item import OrderItemRead, OrderItemCreate
+from inventoryordersapi.repo.order_repo import OrderRepo
+from inventoryordersapi.repo.order_item_repo import OrderItemRepo
+from inventoryordersapi.repo.item_repo import ItemRepo
+from inventoryordersapi.model.order_record import OrderRecord
+from inventoryordersapi.model.order_item_record import OrderItemRecord
+from inventoryordersapi.model.item_record import ItemRecord
+from inventoryordersapi.domain.order import OrderRead
+from inventoryordersapi.domain.order_req_res import (
     CreateOrderRequest, CreateOrderResponse, 
     UpdateOrderRequest, UpdateOrderResponse,
     GetOrderResponse, ListOrderResponse
 )
-from domain.common import ErrorCode
-from utils.pagination import paginate_query
-from typing import List, Optional
+from inventoryordersapi.domain.common import ErrorCode
+from inventoryordersapi.utils.pagination import paginate_query
 from datetime import datetime
+
 
 class OrderService:
     def __init__(self, db: Session):
@@ -45,22 +45,59 @@ class OrderService:
                 msg=str(e)
             )
 
-    def list_orders(self, skip: int = 0, limit: int = 100) -> ListOrderResponse:
-        """List orders with pagination"""
-        try:
-            query = self.db.query(OrderRecord)
-            orders, pagination = paginate_query(query, limit=limit, offset=skip)
-            return ListOrderResponse(
-                orders=orders,
-                pagination=pagination,
-                msg="Orders listed successfully"
-            )
-        except Exception as e:
-            return ListOrderResponse(
-                error=True,
-                code=ErrorCode.INTERNAL_ERROR,
-                msg=str(e)
-            )
+    def list_orders(
+        self,
+        customer_name: str | None = None,
+        status: str | None = None,
+        from_date: str | None = None,
+        to_date: str | None = None,
+        page: int = 1,
+        page_size: int = 10
+    ):
+        query = self.db.query(OrderRecord)
+
+        if customer_name:
+            query = query.filter(OrderRecord.customer_name.ilike(f"%{customer_name}%"))
+        
+        if status:
+            if status.lower() == "paid":
+                query = query.filter(OrderRecord.is_paid == True)
+            elif status.lower() == "unpaid":
+                query = query.filter(OrderRecord.is_paid == False)
+    
+        if from_date:
+            from_dt = datetime.fromisoformat(from_date)
+            query = query.filter(OrderRecord.created_at >= from_dt)
+    
+        if to_date:
+            to_dt = datetime.fromisoformat(to_date)
+            query = query.filter(OrderRecord.created_at <= to_dt)
+
+        offset = (page - 1) * page_size
+        orders, pagination = paginate_query(query, limit=page_size, offset=offset, page=page, page_size=page_size)
+    
+        # Convert OrderRecord to OrderRead
+        orders_read = []
+        for order in orders:
+                orders_read.append(OrderRead(
+                order_id=order.order_id,
+                customer_name=order.customer_name,
+                customer_email=order.customer_email,
+                total_amount=order.total_amount,
+                is_paid=order.is_paid,
+                created_at=order.created_at,
+                updated_at=order.updated_at,
+                order_items=[OrderItemRead(
+                    order_item_id=item.order_item_id,
+                    item_id=item.item_id,
+                    quantity=item.quantity,
+                    price=item.price,
+                    created_at=item.created_at,
+                    updated_at=item.updated_at
+                ) for item in order.order_items]
+            ))
+
+        return orders_read, pagination
 
     def create_order(self, request: CreateOrderRequest) -> CreateOrderResponse:
         """Create a new order with items"""
@@ -200,6 +237,36 @@ class OrderService:
                 code=ErrorCode.INTERNAL_ERROR,
                 msg=str(e)
             )
+
+
+    def cancel_order(self, order_id: str) -> bool:
+        """
+        Cancel an order. Restores stock if needed.
+        """
+        try:
+            with self.db.begin():
+                order = self.order_repo.get_for_update(order_id)
+                if not order:
+                    return False  # Not found
+                if order.is_canceled:
+                    return False  # Already canceled
+
+                # Mark as canceled
+                order.is_canceled = True
+                self.db.add(order)
+
+                # Optional: restore stock
+                for item in order.order_items:
+                    db_item = self.item_repo.get_for_update(item.item_id)
+                    if db_item:
+                        db_item.item_quantity += item.quantity
+                        self.db.add(db_item)
+
+            return True
+        except Exception:
+            self.db.rollback()
+            return False
+
 
     def delete_order(self, order_id: str) -> bool:
         """Delete an order"""

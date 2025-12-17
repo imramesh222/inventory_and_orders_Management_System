@@ -1,9 +1,9 @@
 import datetime
 from sqlalchemy.orm import Session
-from sqlalchemy import select
-from model.item_record import ItemRecord
-from domain.item import Item
-from utils.pagination import paginate_query
+from sqlalchemy import select, func
+from inventoryordersapi.model.item_record import ItemRecord
+from inventoryordersapi.domain.item import Item
+from inventoryordersapi.utils.pagination import paginate_query
 
 class ItemRepo:
     def __init__(self, db: Session):
@@ -19,7 +19,8 @@ class ItemRepo:
             item_description=record.item_description,
             item_price=record.item_price,
             item_quantity=record.item_quantity,
-            is_active=record.is_active
+            is_active=record.is_active,
+            low_stock=record.item_quantity < 5
         )
 
     def get(self, item_id: str) -> Item:
@@ -84,3 +85,24 @@ class ItemRepo:
         item.item_quantity -= quantity
         item.updated_at = datetime.datetime.utcnow()
         self.db.add(item)
+
+    def exists_active_name(self, name: str, exclude_id: str | None = None) -> bool:
+        """
+        Check if an active item with the same name already exists.
+        """
+        query = self.db.query(ItemRecord).filter(
+            func.lower(ItemRecord.item_name) == name.lower(),
+            ItemRecord.is_active == True
+        )
+
+        if exclude_id:
+            query = query.filter(ItemRecord.item_id != exclude_id)
+
+        return self.db.query(query.exists()).scalar()
+
+    def soft_delete(self, db_item: ItemRecord) -> Item:
+        db_item.is_active = False
+        self.db.add(db_item)
+        self.db.commit()
+        self.db.refresh(db_item)
+        return self._record_to_item(db_item)

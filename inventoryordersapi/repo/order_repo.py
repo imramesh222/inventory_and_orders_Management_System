@@ -1,11 +1,11 @@
 from typing import List, Dict, Any
 from datetime import datetime
 from sqlalchemy.orm import Session
-from model.order_record import OrderRecord
-from model.order_item_record import OrderItemRecord
-from domain.order import Order, OrderRead
-from domain.order_item import OrderItemRead, OrderItemCreate
-from utils.pagination import paginate_query
+from inventoryordersapi.model.order_record import OrderRecord
+from inventoryordersapi.model.order_item_record import OrderItemRecord
+from inventoryordersapi.domain.order import OrderRead
+from inventoryordersapi.domain.order_item import OrderItemRead
+from inventoryordersapi.utils.pagination import paginate_query
 
 class OrderRepo:
     def __init__(self, db: Session):

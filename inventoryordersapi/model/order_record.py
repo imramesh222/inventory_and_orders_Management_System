@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Float, Boolean, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from model import Base
+from inventoryordersapi.model import Base
 import uuid
 
 class OrderRecord(Base):
@@ -12,6 +12,7 @@ class OrderRecord(Base):
     customer_email = Column(String(255), nullable=False)
     total_amount = Column(Float, nullable=False, default=0.0)
     is_paid = Column(Boolean, default=False, nullable=False)
+    is_canceled = Column(Boolean, default=False)   
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now(), nullable=False)
 

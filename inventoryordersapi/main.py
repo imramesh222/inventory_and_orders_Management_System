@@ -1,12 +1,10 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
-from api.routes import include_routers
-from core.settings import Settings
+from inventoryordersapi.api.routes import include_routers
+from inventoryordersapi.core.settings import settings
 
 app = FastAPI(title="Inventory & Orders Management API", version="1.0.0")
-
-settings = Settings()
 
 app.add_middleware(
     CORSMiddleware,

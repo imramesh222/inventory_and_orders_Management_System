@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Float, Integer, DateTime, ForeignKey
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
-from model import Base
+from inventoryordersapi.model import Base
 import uuid
 class OrderItemRecord(Base):
     __tablename__ = "order_item"

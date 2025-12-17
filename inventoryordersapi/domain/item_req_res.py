@@ -21,11 +21,14 @@ class UpdateItemResponse(BaseResponse):
 class ListItemRequest(BaseModel):
     pagination: Pagination = None
 
+# class ListItemResponse(BaseResponse):
+#     items: List[Item] = []
+#     pagination: Pagination = None
+
 class ListItemResponse(BaseResponse):
     items: List[Item] = []
-    pagination: Pagination = None
-
-
+    pagination: Optional[Pagination] = None
+    
 class GetItemRequest(BaseModel):
     item_id: str
 
