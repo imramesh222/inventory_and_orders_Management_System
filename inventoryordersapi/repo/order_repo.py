@@ -6,6 +6,7 @@ from inventoryordersapi.model.order_item_record import OrderItemRecord
 from inventoryordersapi.domain.order import OrderRead
 from inventoryordersapi.domain.order_item import OrderItemRead
 from inventoryordersapi.utils.pagination import paginate_query
+from inventoryordersapi.domain.item import ItemRead
 
 class OrderRepo:
     def __init__(self, db: Session):
@@ -16,7 +17,7 @@ class OrderRepo:
         if not record:
             return None
         
-        from domain.item import ItemRead
+
         
         return OrderItemRead(
             order_item_id=str(record.order_item_id),
@@ -38,26 +39,32 @@ class OrderRepo:
         )
 
     def _record_to_order_read(self, record: OrderRecord) -> OrderRead:
-        """Convert OrderRecord (SQLAlchemy) to OrderRead (Pydantic)"""
         if not record:
             return None
-        
-        # Convert order items
+    
         order_items = [
             self._record_to_order_item(item)
             for item in record.order_items
         ] if record.order_items else []
-        
+    
         return OrderRead(
             order_id=str(record.order_id),
             customer_name=record.customer_name,
             customer_email=record.customer_email,
             total_amount=record.total_amount,
-            is_paid=record.is_paid,
+            status=record.status.value if record.status else "pending",
             order_items=order_items,
             created_at=record.created_at,
             updated_at=record.updated_at
         )
+    
+    def get_for_update(self, order_id: str) -> OrderRecord | None:
+        """
+        Fetch an OrderRecord by ID with a FOR UPDATE lock (transactional lock).
+        Returns the SQLAlchemy model, not Pydantic.
+        """
+        return self.db.query(OrderRecord).filter(OrderRecord.order_id == order_id).with_for_update().first()
+
 
     def get(self, order_id: str) -> OrderRead:
         record = self.db.query(OrderRecord).filter(OrderRecord.order_id == order_id).first()
@@ -78,7 +85,7 @@ class OrderRepo:
                     customer_name=order_data['customer_name'],
                     customer_email=order_data['customer_email'],
                     total_amount=order_data['total_amount'],
-                    is_paid=False
+                    status="pending"
                 )
                 self.db.add(order)
                 self.db.flush()  # Get the order_id
@@ -100,15 +107,3 @@ class OrderRepo:
             self.db.rollback()
             raise e
 
-    def update(self, db_order: OrderRecord, update_data: dict) -> OrderRead:
-        with self.db.begin():
-            for field, value in update_data.items():
-                if field != 'order_id' and hasattr(db_order, field):
-                    setattr(db_order, field, value)
-            self.db.refresh(db_order)
-            return self._record_to_order_read(db_order)
-
-    def delete(self, db_order: OrderRecord) -> bool:
-        with self.db.begin():
-            self.db.delete(db_order)
-            return True

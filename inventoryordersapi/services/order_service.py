@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from inventoryordersapi.domain.order_item import OrderItemRead, OrderItemCreate
+from inventoryordersapi.domain.order_response import OrderItemResponse, OrderResponse
 from inventoryordersapi.repo.order_repo import OrderRepo
 from inventoryordersapi.repo.order_item_repo import OrderItemRepo
 from inventoryordersapi.repo.item_repo import ItemRepo
@@ -60,10 +61,10 @@ class OrderService:
             query = query.filter(OrderRecord.customer_name.ilike(f"%{customer_name}%"))
         
         if status:
-            if status.lower() == "paid":
-                query = query.filter(OrderRecord.is_paid == True)
+            if status.lower() == "confirmed":
+                query = query.filter(OrderRecord.status == "confirmed")
             elif status.lower() == "unpaid":
-                query = query.filter(OrderRecord.is_paid == False)
+                query = query.filter(OrderRecord.status != "confirmed")
     
         if from_date:
             from_dt = datetime.fromisoformat(from_date)
@@ -84,7 +85,7 @@ class OrderService:
                 customer_name=order.customer_name,
                 customer_email=order.customer_email,
                 total_amount=order.total_amount,
-                is_paid=order.is_paid,
+                status=order.status,
                 created_at=order.created_at,
                 updated_at=order.updated_at,
                 order_items=[OrderItemRead(
@@ -110,7 +111,7 @@ class OrderService:
                     customer_name=order_data.customer_name,
                     customer_email=order_data.customer_email,
                     total_amount=0,  # Will be calculated
-                    is_paid=False
+                    status="pending"
                 )
                 self.db.add(order_record)
                 self.db.flush()  # To get the order_id
@@ -170,7 +171,7 @@ class OrderService:
                     customer_name=order_record.customer_name,
                     customer_email=order_record.customer_email,
                     total_amount=order_record.total_amount,
-                    is_paid=order_record.is_paid,
+                    status=order_record.status,
                     created_at=order_record.created_at,
                     updated_at=order_record.updated_at,
                     order_items=[
@@ -198,85 +199,90 @@ class OrderService:
                 msg=str(e)
             )
 
-    def update_order(self, order_id: str, request: UpdateOrderRequest) -> UpdateOrderResponse:
-        """Update an existing order"""
-        try:
-            with self.db.begin():
-                # Get existing order with items
-                order = self.order_repo.get_for_update(order_id)
-                if not order:
-                    return UpdateOrderResponse(
-                        error=True,
-                        code=ErrorCode.NOT_FOUND,
-                        msg=f"Order with ID {order_id} not found"
-                    )
-
-                # Update order fields
-                update_data = request.dict(exclude_unset=True)
-                for field, value in update_data.items():
-                    if hasattr(order, field) and field != 'order_items':
-                        setattr(order, field, value)
-
-                # If updating order items, handle carefully
-                if 'order_items' in update_data:
-                    # For simplicity, we'll just update the entire order
-                    # In a real app, you'd want to handle this more carefully
-                    # by calculating diffs and updating quantities accordingly
-                    pass
-
-                self.db.add(order)
-                return UpdateOrderResponse(
-                    order=order,
-                    msg="Order updated successfully"
-                )
-
-        except Exception as e:
-            self.db.rollback()
-            return UpdateOrderResponse(
-                error=True,
-                code=ErrorCode.INTERNAL_ERROR,
-                msg=str(e)
-            )
-
-
     def cancel_order(self, order_id: str) -> bool:
         """
         Cancel an order. Restores stock if needed.
-        """
+            """
         try:
             with self.db.begin():
                 order = self.order_repo.get_for_update(order_id)
                 if not order:
-                    return False  # Not found
-                if order.is_canceled:
-                    return False  # Already canceled
-
-                # Mark as canceled
-                order.is_canceled = True
+                    return False  # Order not found
+                if order.status == "canceled":
+                    return False
+                if order.status == "confirmed":
+                    return False
+                # Mark order as canceled
+                order.status = "canceled"
                 self.db.add(order)
 
-                # Optional: restore stock
+                # Restore stock
                 for item in order.order_items:
                     db_item = self.item_repo.get_for_update(item.item_id)
                     if db_item:
                         db_item.item_quantity += item.quantity
                         self.db.add(db_item)
 
+            self.db.commit()
             return True
-        except Exception:
+        except Exception as e:
             self.db.rollback()
+            print(f"Error canceling order {order_id}: {e}")
             return False
 
+    def format_order_response(self, order_read: OrderRead) -> OrderResponse:
+        items = [
+            OrderItemResponse(
+                item_id=item.item_id,
+                name=getattr(item, "item_name", getattr(item, "price", "")),  # if you have item name somewhere
+                unit_price=item.price,
+                quantity=item.quantity,
+                line_total=item.price * item.quantity
+            )
+            for item in order_read.order_items
+        ]
 
-    def delete_order(self, order_id: str) -> bool:
-        """Delete an order"""
-        try:
-            with self.db.begin():
-                order = self.order_repo.get(order_id)
-                if not order:
-                    return False
-                self.order_repo.delete(order)
-                return True
-        except Exception:
-            self.db.rollback()
-            return False
+        return OrderResponse(
+            id=order_read.order_id,
+            customer_name=order_read.customer_name,
+            status=order_read.status,
+            total_amount=order_read.total_amount,
+            created_at=order_read.created_at.isoformat() if hasattr(order_read.created_at, "isoformat") else str(order_read.created_at),
+        items=items
+    )
+
+
+    def format_order_items_for_response(self, order_read: OrderRead):
+        """
+        Convert internal OrderItemRead to API-friendly format (unit_price, line_total, name)
+        """
+        formatted_items = []
+        for item in order_read.order_items:
+            # get item name if item object exists, else fallback
+            item_name = getattr(item, "item_name", None)
+            if not item_name and hasattr(item, "item") and getattr(item.item, "item_name", None):
+                item_name = item.item.item_name
+            formatted_items.append({
+                "item_id": item.item_id,
+                "name": item_name or "Unknown",
+                "unit_price": item.price,
+                "quantity": item.quantity,
+                "line_total": item.price * item.quantity
+            })
+        return formatted_items
+
+    def format_order_for_response(self, order_read: OrderRead):
+        """
+        Convert OrderRead to dict matching spec example
+        """
+        return {
+            "id": order_read.order_id,
+            "customer_name": order_read.customer_name,
+            "status": order_read.status,
+            "total_amount": order_read.total_amount,
+            "created_at": order_read.created_at.isoformat(),
+            "items": self.format_order_items_for_response(order_read)
+        }
+
+
+

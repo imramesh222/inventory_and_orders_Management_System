@@ -12,7 +12,7 @@ class Order(BaseModel):
 class OrderRead(Order, TimestampMixin):
     order_id: str
     total_amount: float
-    is_paid: bool
+    status: str  
     order_items: List[OrderItemRead]  # nested order items with details
 
     class Config:
