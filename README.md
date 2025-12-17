@@ -1,20 +1,20 @@
-# 📦 Inventory & Orders Management System
+# Inventory & Orders Management System
 
-A robust RESTful API for managing inventory and processing orders with proper stock management, built with FastAPI and PostgreSQL.
+A robust RESTful API for managing inventory and processing orders with proper stock management, built with FastAPI, PostgreSQL and liquibase for databse migrations.
 
-## 🚀 Features
+## Features
 
 ### Inventory Management
-- ✅ Create, read, update, and delete items
-- ✅ Track item quantities and prices
-- ✅ Filter and search items
-- ✅ Paginated item listings
+- Create, read, update, and delete items
+- Track item quantities and prices
+- Filter and search items
+- Paginated item listings
 
 ### Order Processing
-- 🛒 Create and manage customer orders
-- 📉 Automatic stock level updates
-- 🔄 Transaction management for data consistency
-- 📊 Order history and tracking
+- Create and manage customer orders
+- Automatic stock level updates
+- Transaction management for data consistency
+- Order history and tracking
 
 ### API Endpoints
 
@@ -32,14 +32,14 @@ A robust RESTful API for managing inventory and processing orders with proper st
 - `PUT /orders/{order_id}` - Update an order
 - `DELETE /orders/{order_id}` - Delete an order
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - **Backend Framework**: FastAPI
 - **Database**: PostgreSQL
 - **ORM**: SQLAlchemy
 - **Migrations**: Liquibase
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
